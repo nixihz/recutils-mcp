@@ -2,6 +2,16 @@
 
 High-performance recutils database MCP (Model Context Protocol) tool implemented in Go, providing type-safe operations.
 
+## About Recutils
+
+[GNU Recutils](https://www.gnu.org/software/recutils/) is a lightweight text-based database toolkit that stores structured data in plain text files. Key features include:
+
+- **Human-readable** - Data stored in plain text format, easy to read and edit
+- **Typed records** - Supports multiple record types, similar to tables in relational databases
+- **Powerful queries** - Provides SQL-like query language (`recsel`)
+- **Serverless** - No database server process required, zero dependencies
+- **VCS-friendly** - Text format naturally supports Git and other version control tools
+
 ## ✨ Features
 
 - ✅ **High Performance** - Compiled language, 2x faster startup, 50% less memory usage
