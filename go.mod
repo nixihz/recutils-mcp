@@ -1,4 +1,4 @@
-module github.com/recutils-mcp/recutils-mcp
+module github.com/nixihz/recutils-mcp
 
 go 1.24
 

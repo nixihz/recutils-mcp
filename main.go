@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/recutils-mcp/recutils-mcp/server"
+	"github.com/nixihz/recutils-mcp/server"
 )
 
 func main() {

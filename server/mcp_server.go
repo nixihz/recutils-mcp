@@ -8,7 +8,7 @@ import (
 	"log"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/recutils-mcp/recutils-mcp/recutils"
+	"github.com/nixihz/recutils-mcp/recutils"
 )
 
 // MCPServer MCP server implementation
