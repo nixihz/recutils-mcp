@@ -47,7 +47,7 @@ go install github.com/nixihz/recutils-mcp@latest
 
 # The binary will be installed to $GOBIN (default: ~/go/bin)
 # Add to PATH if needed:
-export PATH=$PATH:$(go env GOPATH)/bin
+export PATH=$PATH:$(go env GOBIN)
 
 # Run the server
 recutils-mcp
@@ -81,14 +81,14 @@ Add the following configuration to Claude Desktop's config file:
 {
   "mcpServers": {
     "recutils": {
-      "command": "$(go env GOPATH)/bin/recutils-mcp",
+      "command": "$(go env GOBIN)/recutils-mcp",
       "args": []
     }
   }
 }
 ```
 
-> **Note:** Replace `$(go env GOPATH)/bin/recutils-mcp` with the actual path if you installed it elsewhere. On macOS/Linux with `go install`, the default path is `~/go/bin/recutils-mcp`.
+> **Note:** Replace `$(go env GOBIN)/recutils-mcp` with the actual path if you installed it elsewhere. On macOS/Linux with `go install`, the default path is `~/go/bin/recutils-mcp`.
 
 ## 📋 Available Commands
 
