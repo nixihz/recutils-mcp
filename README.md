@@ -73,6 +73,23 @@ make build
 ./recutils-mcp
 ```
 
+## 🔧 Integration with Claude Desktop
+
+Add the following configuration to Claude Desktop's config file:
+
+```json
+{
+  "mcpServers": {
+    "recutils": {
+      "command": "$(go env GOPATH)/bin/recutils-mcp",
+      "args": []
+    }
+  }
+}
+```
+
+> **Note:** Replace `$(go env GOPATH)/bin/recutils-mcp` with the actual path if you installed it elsewhere. On macOS/Linux with `go install`, the default path is `~/go/bin/recutils-mcp`.
+
 ## 📋 Available Commands
 
 ```bash
@@ -244,23 +261,6 @@ go test -bench=. ./...
 
 PASS
 ```
-
-## 🔧 Integration with Claude Desktop
-
-Add the following configuration to Claude Desktop's config file:
-
-```json
-{
-  "mcpServers": {
-    "recutils": {
-      "command": "$(go env GOPATH)/bin/recutils-mcp",
-      "args": []
-    }
-  }
-}
-```
-
-> **Note:** Replace `$(go env GOPATH)/bin/recutils-mcp` with the actual path if you installed it elsewhere. On macOS/Linux with `go install`, the default path is `~/go/bin/recutils-mcp`.
 
 ## 🐛 Troubleshooting
 
