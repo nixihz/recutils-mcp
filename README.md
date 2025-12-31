@@ -27,19 +27,39 @@ sudo apt-get install recutils
 brew install recutils
 ```
 
-### Build and Run
+### Installation
+
+#### Option 1: Using go install (Recommended)
 
 ```bash
-# 1. Install dependencies
+# Install directly to GOBIN
+go install github.com/nixihz/recutils-mcp@latest
+
+# The binary will be installed to $GOBIN (default: ~/go/bin)
+# Add to PATH if needed:
+export PATH=$PATH:$(go env GOPATH)/bin
+
+# Run the server
+recutils-mcp
+```
+
+#### Option 2: Build from source
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/nixihz/recutils-mcp.git
+cd recutils-mcp
+
+# 2. Install dependencies
 go mod download
 
-# 2. Run tests
+# 3. Run tests
 make test
 
-# 3. Build project
+# 4. Build project
 make build
 
-# 4. Run server
+# 5. Run server
 ./recutils-mcp
 ```
 
@@ -116,7 +136,7 @@ package main
 import (
     "context"
     "fmt"
-    "github.com/recutils-mcp/recutils-mcp/recutils"
+    "github.com/nixihz/recutils-mcp/recutils"
 )
 
 func main() {
@@ -223,12 +243,14 @@ Add the following configuration to Claude Desktop's config file:
 {
   "mcpServers": {
     "recutils": {
-      "command": "/path/to/recutils-mcp",
+      "command": "$(go env GOPATH)/bin/recutils-mcp",
       "args": []
     }
   }
 }
 ```
+
+> **Note:** Replace `$(go env GOPATH)/bin/recutils-mcp` with the actual path if you installed it elsewhere. On macOS/Linux with `go install`, the default path is `~/go/bin/recutils-mcp`.
 
 ## 🐛 Troubleshooting
 
