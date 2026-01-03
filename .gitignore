@@ -3,6 +3,8 @@ recutils-mcp
 vendor/
 go.work
 
+logs/
+
 .vscode/
 .idea/
 .claude/
