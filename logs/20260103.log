@@ -1,0 +1,25 @@
+{"time":"2026-01-03T11:58:20.594661+08:00","level":"INFO","msg":"starting Notion MCP server","database_id":"2d4e664ae2208079aaa7f6a969f365ff","type_field":"Type"}
+{"time":"2026-01-03T11:58:21.701149+08:00","level":"INFO","msg":"registering prompt","name":"codereview","title":"codereview","page_id":"2d4e664a-e220-8017-a71c-cae7919f87d3"}
+{"time":"2026-01-03T11:58:21.701197+08:00","level":"INFO","msg":"registering prompt","name":"gitpush","title":"gitpush","page_id":"2d4e664a-e220-8058-8955-c292648727dc"}
+{"time":"2026-01-03T11:58:21.701209+08:00","level":"INFO","msg":"registering prompt","name":"trans-to-eng","title":"trans-to-eng","page_id":"2d5e664a-e220-806d-b917-f27788a6d4b1"}
+{"time":"2026-01-03T11:58:21.701217+08:00","level":"INFO","msg":"registering prompt","name":"constitution","title":"constitution","page_id":"2d9e664a-e220-802f-8666-de7d89b9a8bc"}
+{"time":"2026-01-03T11:58:21.701224+08:00","level":"INFO","msg":"registering prompt","name":"record","title":"record","page_id":"2dae664a-e220-8052-8996-e9d60e4bbaa0"}
+{"time":"2026-01-03T11:58:21.701231+08:00","level":"INFO","msg":"registering prompt","name":"add-unit-test","title":"add-unit-test","page_id":"2dae664a-e220-807b-938c-e7effadc9e32"}
+{"time":"2026-01-03T11:58:21.701238+08:00","level":"INFO","msg":"registered prompts","count":6}
+{"time":"2026-01-03T11:58:21.701445+08:00","level":"INFO","msg":"registering resource","name":"review","title":"review","page_id":"2d4e664a-e220-800e-844a-d33231ab18de"}
+{"time":"2026-01-03T11:58:21.701468+08:00","level":"INFO","msg":"registering resource","name":"doc-tpl-dev","title":"doc-tpl-dev","page_id":"2d7e664a-e220-8066-92cb-cc0adc32c211"}
+{"time":"2026-01-03T11:58:21.701478+08:00","level":"INFO","msg":"registered resources","count":2}
+{"time":"2026-01-03T11:58:21.701519+08:00","level":"INFO","msg":"Notion MCP server started"}
+{"time":"2026-01-03T12:57:52.200455+08:00","level":"INFO","msg":"received signal","signal":"interrupt"}
+{"time":"2026-01-03T12:58:37.648621+08:00","level":"INFO","msg":"starting Notion MCP server","database_id":"2d4e664ae2208079aaa7f6a969f365ff","type_field":"Type"}
+{"time":"2026-01-03T12:58:38.34885+08:00","level":"INFO","msg":"registering prompt","name":"codereview","title":"codereview","page_id":"2d4e664a-e220-8017-a71c-cae7919f87d3"}
+{"time":"2026-01-03T12:58:38.348908+08:00","level":"INFO","msg":"registering prompt","name":"gitpush","title":"gitpush","page_id":"2d4e664a-e220-8058-8955-c292648727dc"}
+{"time":"2026-01-03T12:58:38.348926+08:00","level":"INFO","msg":"registering prompt","name":"trans-to-eng","title":"trans-to-eng","page_id":"2d5e664a-e220-806d-b917-f27788a6d4b1"}
+{"time":"2026-01-03T12:58:38.348937+08:00","level":"INFO","msg":"registering prompt","name":"constitution","title":"constitution","page_id":"2d9e664a-e220-802f-8666-de7d89b9a8bc"}
+{"time":"2026-01-03T12:58:38.348947+08:00","level":"INFO","msg":"registering prompt","name":"record","title":"record","page_id":"2dae664a-e220-8052-8996-e9d60e4bbaa0"}
+{"time":"2026-01-03T12:58:38.348957+08:00","level":"INFO","msg":"registering prompt","name":"add-unit-test","title":"add-unit-test","page_id":"2dae664a-e220-807b-938c-e7effadc9e32"}
+{"time":"2026-01-03T12:58:38.348966+08:00","level":"INFO","msg":"registered prompts","count":6}
+{"time":"2026-01-03T12:58:38.348981+08:00","level":"INFO","msg":"registering resource","name":"review","title":"review","page_id":"2d4e664a-e220-800e-844a-d33231ab18de"}
+{"time":"2026-01-03T12:58:38.349001+08:00","level":"INFO","msg":"registering resource","name":"doc-tpl-dev","title":"doc-tpl-dev","page_id":"2d7e664a-e220-8066-92cb-cc0adc32c211"}
+{"time":"2026-01-03T12:58:38.349013+08:00","level":"INFO","msg":"registered resources","count":2}
+{"time":"2026-01-03T12:58:38.349043+08:00","level":"INFO","msg":"Notion MCP server started"}
