@@ -1,0 +1,50 @@
+version: '3'
+
+tasks:
+  all:
+    desc: Run tests and build
+    deps: [test, build]
+
+  build:
+    desc: Build binary
+    cmds:
+      - echo "Building Recutils MCP Server..."
+      - go build -o recutils-mcp
+
+  test:
+    desc: Run tests
+    cmds:
+      - echo "Running tests..."
+      - go test ./...
+
+  fmt:
+    desc: Format code
+    cmds:
+      - echo "Formatting code..."
+      - go fmt ./...
+
+  vet:
+    desc: Static check
+    cmds:
+      - echo "Running static check..."
+      - go vet ./...
+
+  clean:
+    desc: Clean build files
+    cmds:
+      - echo "Cleaning build files..."
+      - rm -f recutils-mcp
+      - go clean
+
+  help:
+    desc: Show help
+    cmds:
+      - echo "Recutils MCP Server Build Tool"
+      - echo ""
+      - echo "Available tasks:"
+      - echo "  all     - Run tests and build"
+      - echo "  build   - Build binary"
+      - echo "  test    - Run tests"
+      - echo "  fmt     - Format code"
+      - echo "  vet     - Run static check"
+      - echo "  clean   - Clean build files"

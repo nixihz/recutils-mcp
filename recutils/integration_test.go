@@ -237,22 +237,23 @@ func TestRecutilsIntegration(t *testing.T) {
 
 	t.Run("ComplexQueryOperations", func(t *testing.T) {
 		// Setup: Create multiple records for complex queries
+		// Use Person type to avoid mixing record types in the database
 		testRecords := []map[string]interface{}{
-			{"Name": "David Lee", "Age": 25, "Department": "Engineering", "Salary": "80000"},
-			{"Name": "Emma Wilson", "Age": 30, "Department": "Sales", "Salary": "75000"},
-			{"Name": "Frank Miller", "Age": 35, "Department": "Engineering", "Salary": "95000"},
-			{"Name": "Grace Kim", "Age": 28, "Department": "Marketing", "Salary": "70000"},
+			{"Name": "David Lee", "Age": 25, "City": "Seattle"},
+			{"Name": "Emma Wilson", "Age": 30, "City": "Boston"},
+			{"Name": "Frank Miller", "Age": 35, "City": "Seattle"},
+			{"Name": "Grace Kim", "Age": 28, "City": "Portland"},
 		}
 
 		for _, record := range testRecords {
-			result, err := op.InsertRecord(ctx, dbPath, "Employee", record)
+			result, err := op.InsertRecord(ctx, dbPath, "Person", record)
 			if err != nil || !result.Success {
 				t.Fatalf("Failed to insert test record: %v, result: %+v", err, result)
 			}
 		}
 
 		// Test complex query with AND condition
-		result, err := op.QueryRecords(ctx, dbPath, "Department = 'Engineering' && Age > 30", "")
+		result, err := op.QueryRecords(ctx, dbPath, "City = 'Seattle' && Age > 30", "")
 		if err != nil || !result.Success {
 			t.Fatalf("Failed to execute complex query: %v, result: %+v", err, result)
 		}
@@ -263,11 +264,11 @@ func TestRecutilsIntegration(t *testing.T) {
 			t.Error("David Lee should not match (Age 25)")
 		}
 		if !strings.Contains(output, "Frank Miller") {
-			t.Error("Frank Miller should match (Engineering, Age 35)")
+			t.Error("Frank Miller should match (Seattle, Age 35)")
 		}
 
 		// Verify with recsel
-		recselOutput, err := runRecsel(dbPath, "-e", "Department = 'Engineering' && Age > 30")
+		recselOutput, err := runRecsel(dbPath, "-e", "City = 'Seattle' && Age > 30")
 		if err != nil {
 			t.Fatalf("recsel complex query failed: %v", err)
 		}
@@ -276,7 +277,7 @@ func TestRecutilsIntegration(t *testing.T) {
 		}
 
 		// Test query with OR condition
-		result, err = op.QueryRecords(ctx, dbPath, "Department = 'Sales' || Age < 28", "")
+		result, err = op.QueryRecords(ctx, dbPath, "City = 'Boston' || Age < 28", "")
 		if err != nil || !result.Success {
 			t.Fatalf("Failed to execute OR query: %v, result: %+v", err, result)
 		}
@@ -284,14 +285,14 @@ func TestRecutilsIntegration(t *testing.T) {
 		output = result.Output
 		// Should contain Emma Wilson and David Lee
 		if !strings.Contains(output, "Emma Wilson") {
-			t.Error("Emma Wilson (Sales) should match OR query")
+			t.Error("Emma Wilson (Boston) should match OR query")
 		}
 		if !strings.Contains(output, "David Lee") {
 			t.Error("David Lee (Age 25) should match OR query")
 		}
 
 		// Verify with recsel
-		recselOutput, err = runRecsel(dbPath, "-e", "Department = 'Sales' || Age < 28")
+		recselOutput, err = runRecsel(dbPath, "-e", "City = 'Boston' || Age < 28")
 		if err != nil {
 			t.Fatalf("recsel OR query failed: %v", err)
 		}
@@ -301,32 +302,37 @@ func TestRecutilsIntegration(t *testing.T) {
 	})
 
 	t.Run("UpdateMultipleFieldsAndVerify", func(t *testing.T) {
-		// Update all Engineering employees' salary
-		result, err := op.UpdateRecords(ctx, dbPath, "Department = 'Engineering'", map[string]interface{}{
-			"Salary":     "100000",
-			"Department": "R&D",
+		// Update all Seattle residents' city
+		result, err := op.UpdateRecords(ctx, dbPath, "City = 'Seattle'", map[string]interface{}{
+			"City": "Bellevue",
 		})
 		if err != nil || !result.Success {
-			t.Fatalf("Failed to update Engineering employees: %v, result: %+v", err, result)
+			t.Fatalf("Failed to update Seattle residents: %v, result: %+v", err, result)
 		}
 
 		// Verify with recsel - should find updated values
-		recselOutput, err := runRecsel(dbPath, "-e", "Department = 'R&D'")
+		recselOutput, err := runRecsel(dbPath, "-e", "City = 'Bellevue'")
 		if err != nil {
 			t.Fatalf("recsel verification failed: %v", err)
 		}
 
-		if !strings.Contains(recselOutput, "Salary: 100000") {
-			t.Error("Engineering employees' salary was not updated")
-		}
-		if !strings.Contains(recselOutput, "Department: R&D") {
-			t.Error("Engineering department was not renamed to R&D")
+		if !strings.Contains(recselOutput, "City: Bellevue") {
+			t.Error("Seattle residents' city was not updated to Bellevue")
 		}
 
-		// Count how many R&D employees
-		rdLines := strings.Count(recselOutput, "Department: R&D")
-		if rdLines < 2 {
-			t.Errorf("Expected at least 2 R&D employees, got %d", rdLines)
+		// Count how many Bellevue residents (Frank Miller, David Lee after update)
+		bellevueLines := strings.Count(recselOutput, "City: Bellevue")
+		if bellevueLines < 2 {
+			t.Errorf("Expected at least 2 Bellevue residents, got %d", bellevueLines)
+		}
+
+		// Verify Seattle is now empty
+		recselOutput, err = runRecsel(dbPath, "-e", "City = 'Seattle'")
+		if err != nil {
+			t.Fatalf("recsel verification failed: %v", err)
+		}
+		if recselOutput != "" {
+			t.Error("Seattle should have no residents after update")
 		}
 	})
 

@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -78,21 +77,21 @@ func (ro *RecordOperation) QueryRecords(ctx context.Context, databaseFile, query
 	return ro.executeRecCommand(ctx, cmd, "")
 }
 
-// InsertRecord Insert new record
+// InsertRecord Insert new record using recins command
 func (ro *RecordOperation) InsertRecord(ctx context.Context, databaseFile, recordType string, fields map[string]interface{}) (*Result, error) {
-	// Build record content
+	// Build record content for recins
 	var recordLines []string
 	for fieldName, fieldValue := range fields {
 		recordLines = append(recordLines, fmt.Sprintf("%s: %v", fieldName, fieldValue))
 	}
+	recordContent := strings.Join(recordLines, "\n")
 
 	// Check if database file exists or is empty
 	fileInfo, err := os.Stat(databaseFile)
 	if os.IsNotExist(err) || (err == nil && fileInfo.Size() == 0) {
-		// If file does not exist or is empty, create new record set
-		// %rec: directive requires blank line separator, fields separated by newlines
-		content := fmt.Sprintf("%%rec: %s\n\n%s\n", recordType, strings.Join(recordLines, "\n"))
-		err = ioutil.WriteFile(databaseFile, []byte(content), 0644)
+		// If file does not exist or is empty, create new record set with %rec: directive
+		content := fmt.Sprintf("%%rec: %s\n\n%s\n", recordType, recordContent)
+		err = os.WriteFile(databaseFile, []byte(content), 0644)
 		if err != nil {
 			return &Result{
 				Success: false,
@@ -111,58 +110,33 @@ func (ro *RecordOperation) InsertRecord(ctx context.Context, databaseFile, recor
 			Output:  "",
 			Error:   err.Error(),
 		}, fmt.Errorf("failed to stat database file: %w", err)
-	} else {
-		// If file exists, append new record (using blank line separator)
-		file, err := os.OpenFile(databaseFile, os.O_APPEND|os.O_WRONLY, 0644)
-		if err != nil {
-			return &Result{
-				Success: false,
-				Output:  "",
-				Error:   err.Error(),
-			}, fmt.Errorf("failed to open database file: %w", err)
-		}
-		defer file.Close()
-
-		// Check if file ends with newline
-		file.Seek(-1, 2) // Move to second-to-last byte of file
-		lastChar := make([]byte, 1)
-		file.Read(lastChar)
-
-		// If file does not end with newline, add newline first
-		if lastChar[0] != '\n' {
-			_, err = file.WriteString("\n")
-			if err != nil {
-				return &Result{
-					Success: false,
-					Output:  "",
-					Error:   err.Error(),
-				}, fmt.Errorf("failed to write newline: %w", err)
-			}
-		}
-
-		// Add blank line separator and record content (add newline at end of record)
-		_, err = file.WriteString("\n" + strings.Join(recordLines, "\n") + "\n")
-		if err != nil {
-			return &Result{
-				Success: false,
-				Output:  "",
-				Error:   err.Error(),
-			}, fmt.Errorf("failed to write record: %w", err)
-		}
-
-		return &Result{
-			Success: true,
-			Output:  "Record inserted successfully",
-			Error:   "",
-		}, nil
 	}
+
+	// Use recins to insert record into existing database
+	// -t specifies the record type, -r specifies the record content
+	cmd := []string{"recins", "-t", recordType, "-r", recordContent, databaseFile}
+	result, err := ro.executeRecCommand(ctx, cmd, "")
+
+	if err != nil || !result.Success {
+		return &Result{
+			Success: false,
+			Output:  result.Output,
+			Error:   result.Error,
+		}, err
+	}
+
+	return &Result{
+		Success: true,
+		Output:  "Record inserted successfully",
+		Error:   "",
+	}, nil
 }
 
 // DeleteRecords Delete records
 func (ro *RecordOperation) DeleteRecords(ctx context.Context, databaseFile, queryExpression string) (*Result, error) {
 	// Backup original file
 	backupFile := databaseFile + ".bak"
-	originalContent, err := ioutil.ReadFile(databaseFile)
+	originalContent, err := os.ReadFile(databaseFile)
 	if err != nil {
 		return &Result{
 			Success: false,
@@ -171,7 +145,7 @@ func (ro *RecordOperation) DeleteRecords(ctx context.Context, databaseFile, quer
 		}, fmt.Errorf("failed to read database file: %w", err)
 	}
 
-	err = ioutil.WriteFile(backupFile, originalContent, 0644)
+	err = os.WriteFile(backupFile, originalContent, 0644)
 	if err != nil {
 		return &Result{
 			Success: false,
@@ -180,15 +154,27 @@ func (ro *RecordOperation) DeleteRecords(ctx context.Context, databaseFile, quer
 		}, fmt.Errorf("failed to create backup: %w", err)
 	}
 
+	// Extract record type declaration from original file
+	recordTypeDecl := extractRecordTypeDeclaration(string(originalContent))
+
 	// Use recsel to get records to keep
 	cmd := []string{"recsel", "-e", fmt.Sprintf("!(%s)", queryExpression), databaseFile}
 	result, err := ro.executeRecCommand(ctx, cmd, "")
 
 	if result.Success {
-		err = ioutil.WriteFile(databaseFile, []byte(result.Output), 0644)
+		// Rebuild file with record type declaration
+		var output string
+		if recordTypeDecl != "" {
+			output = recordTypeDecl + "\n\n"
+		}
+		if result.Output != "" {
+			output += result.Output + "\n"
+		}
+
+		err = os.WriteFile(databaseFile, []byte(output), 0644)
 		if err != nil {
 			// Restore backup
-			ioutil.WriteFile(backupFile, originalContent, 0644)
+			os.WriteFile(backupFile, originalContent, 0644)
 			return &Result{
 				Success: false,
 				Output:  "",
@@ -206,7 +192,7 @@ func (ro *RecordOperation) DeleteRecords(ctx context.Context, databaseFile, quer
 		}, nil
 	} else {
 		// Restore backup
-		ioutil.WriteFile(backupFile, originalContent, 0644)
+		os.WriteFile(backupFile, originalContent, 0644)
 		os.Remove(backupFile)
 		return result, nil
 	}
@@ -228,7 +214,7 @@ func (ro *RecordOperation) UpdateRecords(ctx context.Context, databaseFile, quer
 
 	// Backup original file
 	backupFile := databaseFile + ".bak"
-	originalContent, err := ioutil.ReadFile(databaseFile)
+	originalContent, err := os.ReadFile(databaseFile)
 	if err != nil {
 		return &Result{
 			Success: false,
@@ -237,7 +223,7 @@ func (ro *RecordOperation) UpdateRecords(ctx context.Context, databaseFile, quer
 		}, fmt.Errorf("failed to read database file: %w", err)
 	}
 
-	err = ioutil.WriteFile(backupFile, originalContent, 0644)
+	err = os.WriteFile(backupFile, originalContent, 0644)
 	if err != nil {
 		return &Result{
 			Success: false,
@@ -251,6 +237,9 @@ func (ro *RecordOperation) UpdateRecords(ctx context.Context, databaseFile, quer
 	keepResult, err := ro.executeRecCommand(ctx, keepCmd, "")
 
 	if keepResult.Success {
+		// Extract record type declaration from original file
+		recordTypeDecl := extractRecordTypeDeclaration(string(originalContent))
+
 		// Build updated records
 		updatedRecords := []string{}
 		lines := strings.Split(queryResult.Output, "\n")
@@ -286,19 +275,29 @@ func (ro *RecordOperation) UpdateRecords(ctx context.Context, databaseFile, quer
 
 		updatedRecords = currentRecord
 
-		// Write back to file
-		output := keepResult.Output
-		if len(updatedRecords) > 0 {
-			if output != "" {
+		// Write back to file with record type declaration
+		var output string
+		if recordTypeDecl != "" {
+			output = recordTypeDecl + "\n\n"
+		}
+
+		// Add non-matching records
+		if keepResult.Output != "" {
+			output += keepResult.Output
+			if len(updatedRecords) > 0 {
 				output += "\n\n"
 			}
+		}
+
+		// Add updated records
+		if len(updatedRecords) > 0 {
 			output += strings.Join(updatedRecords, "\n") + "\n"
 		}
 
-		err = ioutil.WriteFile(databaseFile, []byte(output), 0644)
+		err = os.WriteFile(databaseFile, []byte(output), 0644)
 		if err != nil {
 			// Restore backup
-			ioutil.WriteFile(backupFile, originalContent, 0644)
+			os.WriteFile(backupFile, originalContent, 0644)
 			return &Result{
 				Success: false,
 				Output:  "",
@@ -316,7 +315,7 @@ func (ro *RecordOperation) UpdateRecords(ctx context.Context, databaseFile, quer
 		}, nil
 	} else {
 		// Restore backup
-		ioutil.WriteFile(backupFile, originalContent, 0644)
+		os.WriteFile(backupFile, originalContent, 0644)
 		os.Remove(backupFile)
 		return keepResult, nil
 	}
@@ -326,4 +325,16 @@ func (ro *RecordOperation) UpdateRecords(ctx context.Context, databaseFile, quer
 func (ro *RecordOperation) GetDatabaseInfo(ctx context.Context, databaseFile string) (*Result, error) {
 	cmd := []string{"recinf", databaseFile}
 	return ro.executeRecCommand(ctx, cmd, "")
+}
+
+// extractRecordTypeDeclaration extracts the record type declaration (e.g., "%rec: Person") from file content
+func extractRecordTypeDeclaration(content string) string {
+	lines := strings.Split(content, "\n")
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "%rec:") {
+			return trimmed
+		}
+	}
+	return ""
 }
